@@ -29,11 +29,8 @@ public class ProductService {
         return repository.create(productDTO).thenApplyAsync(product -> new ProductDTO(product));
     }
 
-    public CompletionStage<List<ProductDTO>> getAllProducts() {
-        return repository.findAll()
-                .thenApplyAsync(products -> products.stream()
-                        .map(ProductDTO::new)
-                        .collect(Collectors.toList()));
+    public CompletionStage<List<Product>> getAllProducts(int page, int pageSize, String sortBy) {
+        return repository.findAll(page, pageSize, sortBy);
     }
 
     public CompletionStage<ProductDTO> findById(Long id) {

@@ -5,6 +5,10 @@ import play.db.jpa.JPAApi;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -41,10 +45,28 @@ public class ProductRepository {
         });
     }
 
-    public CompletionStage<List<Product>> findAll() {
+    public CompletionStage<List<Product>> findAll(int page, int pageSize, String sortBy) {
         return CompletableFuture.supplyAsync(() -> {
             return jpaApi.withTransaction((EntityManager em) -> {
-                List<Product> products = em.createQuery("SELECT p FROM Product p", Product.class).getResultList();
+                CriteriaBuilder cb = em.getCriteriaBuilder();
+                CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+                Root<Product> root = cq.from(Product.class);
+                
+                // sorting
+                if(sortBy != null && !sortBy.isEmpty()) {
+                    if(sortBy.equals("id")) {
+                        cq.orderBy(cb.asc(root.get("id")));
+                    } else {
+                        cq.orderBy(cb.asc(root.get(sortBy)));
+                    }
+                }
+                
+                // pagination
+                int offset = (page - 1) * pageSize;
+                cq.select(root).orderBy(cb.asc(root.get("id")));
+                TypedQuery<Product> query = em.createQuery(cq).setFirstResult(offset).setMaxResults(pageSize);
+                List<Product> products = query.getResultList();
+                
                 return products;
             });
         }).thenApplyAsync(products -> new ArrayList<>(products));

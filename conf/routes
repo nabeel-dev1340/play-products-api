@@ -9,7 +9,7 @@ GET     /               controllers.HomeController.index()
 
 # Product routes
 POST    /api/products                        controllers.ProductController.create(request:Request)
-GET     /api/products                        controllers.ProductController.findAll()
+GET     /api/products                        controllers.ProductController.findAll(page: Int ?= 1, pageSize: Int ?= 5, sortBy: String ?= "id")
 GET     /api/products/:id                    controllers.ProductController.getById(id:Long)
 PUT     /api/products/:id                    controllers.ProductController.update(id:Long, request:Request)
 DELETE  /api/products/:id                    controllers.ProductController.delete(id:Long)

@@ -33,9 +33,10 @@ public class ProductController extends Controller {
         }, httpExecutionContext.current());
     }
 
-    public CompletionStage<Result> findAll() {
-        return productService.getAllProducts()
-                .thenApplyAsync(products -> ok(Json.toJson(products)), httpExecutionContext.current());
+    public CompletionStage<Result> findAll(int page, int pageSize, String sortBy) {
+        return productService.getAllProducts(page, pageSize, sortBy).thenApplyAsync(products -> {
+            return ok(Json.toJson(products));
+        });
     }
 
     public CompletionStage<Result> getById(Long id) {
