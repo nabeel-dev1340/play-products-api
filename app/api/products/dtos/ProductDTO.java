@@ -23,7 +23,7 @@ public class ProductDTO {
         this.id = data.getId().toString();
         this.name = data.getName();
         this.price = data.getPrice();
-        this.category = data.getCategory();
+        this.category = data.getCategory().getName();
     }
 
     public String getId() {

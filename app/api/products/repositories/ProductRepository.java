@@ -19,6 +19,7 @@ import java.util.function.Function;
 import java.util.ArrayList;
 
 import api.products.dtos.ProductDTO;
+import api.products.models.Category;
 import api.products.models.Product;
 
 import java.sql.SQLException;
@@ -38,7 +39,11 @@ public class ProductRepository {
     public CompletionStage<Product> create(ProductDTO productDTO) {
         return CompletableFuture.supplyAsync(() -> {
             return jpaApi.withTransaction((EntityManager em) -> {
-                Product product = new Product(productDTO.getName(), productDTO.getPrice(), productDTO.getCategory());
+                Category category = getCategoryByName(em, productDTO.getCategory());
+                if (category == null) {
+                    throw new IllegalArgumentException("Category not found");
+                }
+                Product product = new Product(productDTO.getName(), productDTO.getPrice(), category);
                 em.persist(product);
                 return product;
             });
@@ -95,14 +100,25 @@ public class ProductRepository {
             return jpaApi.withTransaction((EntityManager em) -> {
                 Product existingProduct = em.find(Product.class, id);
                 if (existingProduct != null) {
+                    Category category = getCategoryByName(em, productDTO.getCategory());
+                    if (category == null) {
+                        throw new IllegalArgumentException("Category not found");
+                    }
                     existingProduct.setName(productDTO.getName());
                     existingProduct.setPrice(productDTO.getPrice());
-                    existingProduct.setCategory(productDTO.getCategory());
+                    existingProduct.setCategory(category);
                     em.merge(existingProduct);
                 }
                 return existingProduct;
             });
         });
+    }
+
+    private Category getCategoryByName(EntityManager em, String categoryName) {
+        TypedQuery<Category> query = em.createQuery("SELECT c FROM Category c WHERE c.name = :name", Category.class);
+        query.setParameter("name", categoryName);
+        List<Category> categories = query.getResultList();
+        return categories.isEmpty() ? null : categories.get(0);
     }
 
 }

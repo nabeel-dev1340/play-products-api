@@ -7,6 +7,10 @@
 # Home page
 GET     /               controllers.HomeController.index()
 
+# Category Routes
+POST    /categories                          controllers.CategoryController.create(request:Request)
+GET     /categories                          controllers.CategoryController.findAll
+
 # Product routes
 POST    /api/products                        controllers.ProductController.create(request:Request)
 GET     /api/products                        controllers.ProductController.findAll(page: Int ?= 1, pageSize: Int ?= 5, sortBy: String ?= "id")
